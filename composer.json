@@ -1,0 +1,17 @@
+{
+    "name": "vscode/phpioccontainer",
+    "authors": [
+        {
+            "name": "tunt-1890",
+            "email": "nguyen.thanh.tu@sun-asterisk.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Illuminate\\": "src/Illuminate/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9"
+    }
+}

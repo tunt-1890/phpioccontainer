@@ -25,6 +25,13 @@ class ContainerTest extends TestCase
     {
         $container = new Container;
         $container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
+        $instance = $container->make(IContainerContractStub::class);
+        $this->assertInstanceOf(ContainerImplementationStub::class, $instance);
+    }
+    public function testDependencyResolution()
+    {
+        $container = new Container;
+        $container->bind(IContainerContractStub::class, ContainerImplementationStub::class);
         $class = $container->make(ContainerDependentStub::class);
         $this->assertInstanceOf(ContainerImplementationStub::class, $class->impl);
     }

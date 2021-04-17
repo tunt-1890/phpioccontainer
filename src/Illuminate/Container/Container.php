@@ -6,6 +6,7 @@ use Illuminate\Contracts\Container\Container as ContainerContract;
 use Closure;
 use ReflectionClass;
 use Exception;
+use ReflectionParameter;
 
 class Container implements ContainerContract
 {
@@ -24,11 +25,12 @@ class Container implements ContainerContract
     {
         $concrete = $this->getConcrete($abstract);
 
-        if (!$this->isBuildable($concrete, $abstract)) {
-            throw new Exception("Target class [$concrete] is not buildable.");
+        if ($this->isBuildable($concrete, $abstract)) {
+            $object = $this->build($concrete);
+        } else {
+            $object = $this->make($concrete);
         }
 
-        $object = $this->build($concrete);
         return $object;
     }
     protected function isBuildable($concrete, $abstract)
@@ -51,6 +53,35 @@ class Container implements ContainerContract
         }
 
         $reflector = new ReflectionClass($concrete);
-        return $reflector->newInstanceArgs();
+
+        $constructor = $reflector->getConstructor();
+
+        if(is_null($constructor)) {
+            return new $concrete;
+        }
+
+        $dependencies = $constructor->getParameters();
+
+        $instances = $this->resolveDependencies($dependencies);
+
+        return $reflector->newInstanceArgs($instances);
+    }
+
+    protected function resolveDependencies(array $dependencies)
+    {
+        $results = [];
+
+        foreach ($dependencies as $dependency) {
+            $result = $this->resolveClass($dependency);
+            $results[] = $result;
+        }
+
+        return $results;
+    }
+    protected function resolveClass(ReflectionParameter $dependency)
+    {
+        $type = $dependency->getType();
+        $className = $type->getName();
+        return $this->make($className);
     }
 }

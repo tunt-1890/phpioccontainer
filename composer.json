@@ -13,5 +13,12 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^9"
+    },
+    "description": "ioc container",
+    "scripts": {
+        "test": [
+            "@putenv XDEBUG_MODE=coverage",
+            "phpunit tests --coverage-html ./coverage"
+        ]
     }
 }

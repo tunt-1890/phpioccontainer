@@ -3,6 +3,9 @@
 namespace Illuminate\Container;
 
 use Illuminate\Contracts\Container\Container as ContainerContract;
+use Closure;
+use ReflectionClass;
+use Exception;
 
 class Container implements ContainerContract
 {
@@ -15,12 +18,39 @@ class Container implements ContainerContract
 
     public function make($abstract)
     {
+        return $this->resolve($abstract);
+    }
+    protected function resolve($abstract)
+    {
         $concrete = $this->getConcrete($abstract);
-        return $concrete();
+
+        if (!$this->isBuildable($concrete, $abstract)) {
+            throw new Exception("Target class [$concrete] is not buildable.");
+        }
+
+        $object = $this->build($concrete);
+        return $object;
+    }
+    protected function isBuildable($concrete, $abstract)
+    {
+        return $concrete === $abstract || $concrete instanceof Closure;
     }
 
     protected function getConcrete($abstract)
     {
-        return $this->bindings[$abstract];
+        if (isset($this->bindings[$abstract])) {
+            return $this->bindings[$abstract];
+        }
+
+        return $abstract;
+    }
+    public function build($concrete)
+    {
+        if ($concrete instanceof Closure) {
+            return $concrete($this);
+        }
+
+        $reflector = new ReflectionClass($concrete);
+        return $reflector->newInstanceArgs();
     }
 }
